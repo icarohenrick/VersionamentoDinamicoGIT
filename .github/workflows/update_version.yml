@@ -19,6 +19,7 @@ jobs:
         labels=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels" | jq -r '.[].name')
         if echo "$labels" | grep -qE "(Major|Minor|Build|Revision)"; then
           echo "::set-output name=has_specific_label::true"
+          echo "::set-output name=label_name::$labels"
         else
           echo "::set-output name=has_specific_label::false"
         fi
