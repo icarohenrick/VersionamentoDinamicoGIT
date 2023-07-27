@@ -36,7 +36,7 @@ jobs:
         version=$(grep -oP '(?<=<Version>).*?(?=<\/Version>)' VersionamentoDinamicoGIT.csproj)
         version_parts=($(echo "$version" | tr '.' ' '))
         
-        case "${{ github.event.label.name }}" in
+        case "${{ steps.check_labels.outputs.label_name }}" in
           "Major")
             major=$((version_parts[0]+1))
             version="$major.0.0"
