@@ -1,0 +1,64 @@
+name: Update Version on PR Approval - IH
+
+on:
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  update_version:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Check for Specific Labels
+      id: check_labels
+      run: |
+        labels=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels" | jq -r '.[].name')
+        if echo "$labels" | grep -qE "(Major|Minor|Build|Revision)"; then
+          echo "::set-output name=has_specific_label::true"
+        else
+          echo "::set-output name=has_specific_label::false"
+        fi
+
+    - name: Get PR Approver
+      id: get_pr_approver
+      if: steps.check_labels.outputs.has_specific_label == 'true'
+      run: |
+        approver=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
+        echo "::set-output name=approver::$approver"
+
+    - name: Increment Version and Commit Changes
+      if: steps.check_labels.outputs.has_specific_label == 'true'
+      run: |
+        version=$(grep -oP '(?<=<Version>).*?(?=<\/Version>)' VersionamentoDinamicoGIT.csproj)
+        version_parts=($(echo "$version" | tr '.' ' '))
+        
+        case "${{ github.event.label.name }}" in
+          "Major")
+            major=$((version_parts[0]+1))
+            version="$major.0.0"
+            ;;
+          "Minor")
+            minor=$((version_parts[1]+1))
+            version="${version_parts[0]}.$minor.0"
+            ;;
+          "Build")
+            build=$((version_parts[2]+1))
+            version="${version_parts[0]}.${version_parts[1]}.$build"
+            ;;
+          "Revision")
+            revision=$((version_parts[3]+1))
+            version="${version_parts[0]}.${version_parts[1]}.${version_parts[2]}.$revision"
+            ;;
+        esac
+        
+        echo "Atualizando a versão do App para $version no VersionamentoDinamicoGIT.csproj"
+        sed -i "s/<Version>.*<\/Version>/<Version>$version<\/Version>/" VersionamentoDinamicoGIT.csproj
+
+        git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
+        git config --local user.name "$GITHUB_ACTOR"
+        git commit -m "Action: Update version in VersionamentoDinamicoGIT.csproj" VersionamentoDinamicoGIT.csproj
+        git push origin dev
