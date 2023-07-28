@@ -65,15 +65,15 @@ jobs:
         # Mudar para o branch 'dev' (assumindo que já existe)
         git checkout -b dev
 
-        # Adicionar as alterações e fazer o commit
-        git add VersionamentoDinamicoGIT.csproj
-        git commit -m "Action: Update version in VersionamentoDinamicoGIT.csproj" VersionamentoDinamicoGIT.csproj
-
         # Definir a configuração 'pull.rebase' para 'false' para realizar um merge
         git config pull.rebase false
 
         # Atualizar o branch 'dev' local com as alterações do repositório remoto
-        git pull origin dev
+        git pull origin dev --allow-unrelated-histories
+
+        # Adicionar as alterações e fazer o commit
+        git add VersionamentoDinamicoGIT.csproj
+        git commit -m "Action: Update version in VersionamentoDinamicoGIT.csproj" VersionamentoDinamicoGIT.csproj
 
         # Fazer o push para o repositório remoto no branch 'dev'
         git push origin dev
