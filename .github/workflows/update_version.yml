@@ -68,4 +68,9 @@ jobs:
         # Adicionar as alterações e fazer o commit
         git add VersionamentoDinamicoGIT.csproj
         git commit -m "Action: Update version in VersionamentoDinamicoGIT.csproj" VersionamentoDinamicoGIT.csproj
-        # git push origin dev
+
+        # Atualizar o branch 'dev' local com as alterações do repositório remoto
+        git pull origin dev
+
+        # Fazer o push para o repositório remoto no branch 'dev'
+        git push origin dev
