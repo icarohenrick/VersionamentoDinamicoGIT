@@ -26,18 +26,18 @@ jobs:
 
     - name: Get PR Approver
       id: get_pr_approver
-      if: steps.check_labels.outputs.has_specific_label == 'true'
+      if: needs.check_labels.outputs.has_specific_label == 'true'
       run: |
         approver=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
         echo "approver=$approver" >> $GITHUB_ENV
 
     - name: Increment Version and Commit Changes
-      if: steps.check_labels.outputs.has_specific_label == 'true'
+      if: env.has_specific_label == 'true'
       run: |
         version=$(grep -oP '(?<=<Version>).*?(?=<\/Version>)' VersionamentoDinamicoGIT.csproj)
         version_parts=($(echo "$version" | tr '.' ' '))
         
-        case "${{ steps.check_labels.outputs.label_name }}" in
+        case "${{ env.label_name }}" in
           "Major")
             major=$((version_parts[0]+1))
             version="$major.0.0.0"
