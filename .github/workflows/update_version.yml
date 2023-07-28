@@ -65,12 +65,12 @@ jobs:
         # Mudar para o branch 'dev' (assumindo que já existe)
         git checkout -b dev
 
+        # Atualizar o branch 'dev' local com as alterações do repositório remoto
+        git pull origin dev
+
         # Adicionar as alterações e fazer o commit
         git add VersionamentoDinamicoGIT.csproj
         git commit -m "Action: Update version in VersionamentoDinamicoGIT.csproj" VersionamentoDinamicoGIT.csproj
-
-        # Atualizar o branch 'dev' local com as alterações do repositório remoto
-        git pull origin dev
 
         # Fazer o push para o repositório remoto no branch 'dev'
         git push origin dev
