@@ -18,10 +18,10 @@ jobs:
       run: |
         labels=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels" | jq -r '.[].name')
         if echo "$labels" | grep -qE "(Major|Minor|Build|Revision)"; then
-          echo "::set-output name=has_specific_label::true"
-          echo "::set-output name=label_name::$labels"
+          echo "has_specific_label=true" >> $GITHUB_ENV
+          echo "label_name=$labels" >> $GITHUB_ENV
         else
-          echo "::set-output name=has_specific_label::false"
+          echo "has_specific_label=false" >> $GITHUB_ENV
         fi
 
     - name: Get PR Approver
@@ -29,7 +29,7 @@ jobs:
       if: steps.check_labels.outputs.has_specific_label == 'true'
       run: |
         approver=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
-        echo "::set-output name=approver::$approver"
+        echo "approver=$approver" >> $GITHUB_ENV
 
     - name: Increment Version and Commit Changes
       if: steps.check_labels.outputs.has_specific_label == 'true'
@@ -40,15 +40,15 @@ jobs:
         case "${{ steps.check_labels.outputs.label_name }}" in
           "Major")
             major=$((version_parts[0]+1))
-            version="$major.0.0"
+            version="$major.0.0.0"
             ;;
           "Minor")
             minor=$((version_parts[1]+1))
-            version="${version_parts[0]}.$minor.0"
+            version="${version_parts[0]}.$minor.0.0"
             ;;
           "Build")
             build=$((version_parts[2]+1))
-            version="${version_parts[0]}.${version_parts[1]}.$build"
+            version="${version_parts[0]}.${version_parts[1]}.$build.0"
             ;;
           "Revision")
             revision=$((version_parts[3]+1))
