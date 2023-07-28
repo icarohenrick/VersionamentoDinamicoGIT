@@ -63,7 +63,7 @@ jobs:
         git config --local user.name "$GITHUB_ACTOR"
 
         # Mudar para o branch 'dev' (assumindo que já existe)
-        git checkout dev
+        git checkout -b dev
 
         # Adicionar as alterações e fazer o commit
         git add VersionamentoDinamicoGIT.csproj
